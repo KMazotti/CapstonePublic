@@ -1,0 +1,119 @@
+/*
+ * main.c
+ *
+ *  Created on: Feb 4, 2019
+ *      Author: Kaitlin Mazotti
+ */
+
+// includes
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include "setup.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <queue.h>
+#include <stdio.h>
+#include <csvCreate.h>
+#include <circBuffer.h>
+
+// variables
+static volatile uint16_t curADCResult;
+static volatile float normalizedADCRes;
+volatile uint32_t j;
+uint32_t len = 1024
+
+// function declaration
+void ADC14_IRQHandler();
+
+int main(void)
+{
+
+    // Stop watchdog timer
+    WDT_A_hold(WDT_A_BASE);
+    initLED();
+    initEnable14();
+    ADC14_enableModule();
+    initADC14();
+    initEnable14();
+    ADC14_IRQHandler();
+
+
+    }
+
+    return 0;
+}
+
+//*****************************************************************************
+// Interrupt routine handler
+//*****************************************************************************
+void ADC14_IRQHandler(void)
+{
+    uint64_t status = ADC14_getInterruptStatus();
+    ADC14_clearInterruptFlag(status);
+    initDisable14();
+
+    if (ADC_INT14 & status)
+    {
+        curADCResult = ADC14_getResult(ADC_MEM14);
+        normalizedADCRes = (curADCResult * 3.3) / 16384;
+        for (j=1; j<=SIZE; j++){
+            buffer_push(normalizedADCRes);
+            display();
+        }
+
+    }
+    initEnable14();
+}
+
+
+
+// enablign adc try3
+ADC14_enableModule();
+    // Keep divided by 1 so that it will sample at max speed
+    ADC14_initModule(ADC_CLOCKSOURCE_ADCOSC, ADC_PREDIVIDER_1,
+             ADC_DIVIDER_1, 0);
+
+    // Configuring GPIOs for Analog In
+    // Pin 4.5
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P4,
+            GPIO_PIN5, GPIO_TERTIARY_MODULE_FUNCTION);
+
+    ADC14_configureMultiSequenceMode(ADC_MEM14,
+            ADC_MEM14, true);
+    // configure memory and pin locations
+    // MEM6 will be used to make a buffer
+    // INPUT_A6 will be ADC6 checking for the threshold
+    // A6 P4.7
+    ADC14_configureConversionMemory(ADC_MEM14,
+             ADC_VREFPOS_AVCC_VREFNEG_VSS, ADC_INPUT_A14,
+             ADC_NONDIFFERENTIAL_INPUTS);
+             
+             
+             void clearFlag(){
+    ADC14_clearInterruptFlag(ADC_INT14);
+}
+
+//*****************************************************************************
+// Interrupt routine initialization
+//*****************************************************************************
+void initEnable14(){
+        // Enable Interrupt
+        ADC14_enableInterrupt(ADC_INT14);
+        Interrupt_enableMaster();
+}
+
+void initDisable14(){
+        // Disable Interrupt
+        ADC14_disableInterrupt(ADC_INT14);
+}
+
+/* Attempt at creating an array from buffer data */   
+/* Define struct for the array to hold values */
+typedef struct chunk
+ {
+     const volatile double data[300];    /* the buffer. */
+ } CHUNK;
+
+ CHUNK dataArray[100];
+ 
+for (k=0; k < 300; ++k)
+	memcpy(dataArray[k].data, copyADC+k*300, 300);

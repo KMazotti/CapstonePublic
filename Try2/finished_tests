@@ -1,0 +1,31 @@
+    volatile uint32_t i;
+
+
+//     Test LED
+    while(1)
+    {
+        blinkLEDBlue();
+        // Delay
+        for(i=100000; i>0; i--);
+    }
+//
+//     Test Buffer
+//       if statement to see if what I know should be at the head is actually there
+//        blink LED if it is there
+//        enQueue 5 elements
+    for (j=1; j<=SIZE; j++){
+        enQueue(j);
+        display();
+    }
+
+// still needs work
+// test csv
+//    int a[3][3]={{50,50,50},{60,60,60},{70,70,70}};
+//
+//    char str[100];
+//
+//    printf("\n Enter the filename :");
+//
+//    gets(str);
+//
+//    createCSV(str,a,3,3);
